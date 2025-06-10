@@ -19,7 +19,7 @@ app.post("/api/signup", signupValidator, async (c) => {
     setCookie(c, "authToken", token, cookieOpts);
 
     return c.json({
-      message: "User registerd successfully",
+      message: "User registered successfully",
       user: { id: userId, email },
     });
   } catch (error) {

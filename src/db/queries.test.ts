@@ -19,7 +19,7 @@ describe("insertUser", () => {
     const email = "j6E5t@example.com";
     const password = "password123";
     const userId = await insertUser(db, email, password);
-    console.log(userId);
+    // console.log(userId);
     expect(userId).toBeDefined();
   });
 
