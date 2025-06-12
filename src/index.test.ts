@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import app from ".";
 import { createTestDb } from "./test/test-db";
 import { Database } from "bun:sqlite";
-import { signupRequest } from "./test/test-helpers";
+import { loginRequest, signupRequest } from "./test/test-helpers";
 
 let db: Database;
 
@@ -62,5 +62,25 @@ describe("signup endpoint", () => {
     expect(json).toEqual({
       errors: ["Invalid email", "Password must be at least 10 characters"],
     });
+  });
+});
+
+describe("login endpoint", () => {
+  it("should login a user", async () => {
+    const request = signupRequest();
+    await app.fetch(request);
+
+    const request2 = loginRequest();
+    const response2 = await app.fetch(request2);
+    const json = await response2.json();
+
+    expect(response2.status).toBe(200);
+    expect(json).toEqual({
+      message: "Login successful",
+      user: { id: expect.any(String), email: "test@test.com" },
+    });
+
+    const cookies = response2.headers.get("set-cookie");
+    expect(cookies).toMatch(/authToken=/);
   });
 });
