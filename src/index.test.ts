@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import app from ".";
 import { createTestDb } from "./test/test-db";
 import { Database } from "bun:sqlite";
-import { loginRequest, signupRequest } from "./test/test-helpers";
+import {
+  loginRequest,
+  logoutRequest,
+  signupRequest,
+} from "./test/test-helpers";
 import { error } from "console";
 
 let db: Database;
@@ -108,5 +112,19 @@ describe("login endpoint", () => {
     expect(json).toEqual({
       errors: ["Invalid credentials"],
     });
+  });
+});
+
+describe("logout endpoint", () => {
+  it("should logout a user", async () => {
+    const request = logoutRequest();
+    const response = await app.fetch(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json).toEqual({ message: "Logout successful" });
+
+    const cookies = response.headers.get("set-cookie");
+    expect(cookies).toMatch(/authToken=;/);
   });
 });

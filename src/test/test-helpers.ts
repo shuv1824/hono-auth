@@ -29,3 +29,12 @@ export const loginRequest = (
     }),
   });
 };
+
+export const logoutRequest = () => {
+  return new Request("http://localhost:3000/api/logout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
