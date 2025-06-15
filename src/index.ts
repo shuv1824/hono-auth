@@ -1,13 +1,22 @@
 import { Hono } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { signupValidator } from "./schemas/signup-schema";
-import { getUserByEmail, insertUser } from "./db/queries";
+import { getUserByEmail, getUserById, insertUser } from "./db/queries";
 import { dbConn } from "./db/db";
 import { cookieOpts, genenrateToken } from "./helper";
+import { csrf } from "hono/csrf";
+import { jwt } from "hono/jwt";
+import { email } from "zod/v4";
+import { use } from "hono/jsx";
 
 const app = new Hono();
 
 app
+  .use("/api/*", csrf())
+  .use(
+    "/api/auth/*",
+    jwt({ secret: process.env.JWT_SECRET!, cookie: "authToken" }),
+  )
   .post("/api/signup", signupValidator, async (c) => {
     const db = dbConn();
     const { email, password } = c.req.valid("json");
@@ -75,6 +84,28 @@ app
     });
 
     return c.json({ message: "Logout successful" });
+  })
+  .get("/api/auth/me", async (c) => {
+    const db = dbConn();
+    const payload = c.get("jwtPayload");
+
+    try {
+      const user = getUserById(db, payload.sub);
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      return c.json(
+        {
+          id: user.id,
+          email: user.email,
+        },
+        200,
+      );
+    } catch (error) {
+      console.log("Error fetching user data: ", error);
+      return c.json({ error: "Internal server error" }, 500);
+    }
   });
 
 export default app;
